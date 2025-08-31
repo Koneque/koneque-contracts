@@ -132,27 +132,36 @@ source .env && forge script script/Deploy.s.sol:DeployScript --rpc-url $BASE_SEP
 
 ### 📋 Contratos Desplegados
 
-El proyecto está actualmente desplegado en **Base Sepolia**. Para información detallada sobre las direcciones y configuración:
+El proyecto está desplegado en **Base Sepolia (ChainID: 84532)**. Todos los contratos han sido verificados exitosamente.
 
-- 📄 **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Documentación completa de deployment
-- 📊 **[contracts.json](./contracts.json)** - Direcciones en formato JSON
-- 🔧 **[contracts.ts](./contracts.ts)** - Configuración para TypeScript/JavaScript
-- ⚡ **[interact.sh](./interact.sh)** - Script de interacción rápida
+#### 🚀 Direcciones Principales
+- **MarketplaceCore**: `0x7fe5708061E76C271a1A9466f73D7667ed0C7Ddd`
+- **SmartAccountFactory**: `0x030850c3DEa419bB1c76777F0C2A65c34FB60392`
+- **ReferralSystem**: `0x747EEC46f064763726603c9C5fC928f99926a209`
+- **NativeToken**: `0x697943EF354BFc7c12169D5303cbbB23b133dc53`
 
-#### Interacción Rápida
-```bash
-# Mostrar información de deployment
-./interact.sh info
+#### 📋 Información Completa
+- 📄 **[DEPLOYED_CONTRACTS.md](./DEPLOYED_CONTRACTS.md)** - Lista completa de direcciones y configuración
+- 🌐 **[FRONTEND_INTEGRATION_GUIDE.md](./FRONTEND_INTEGRATION_GUIDE.md)** - Guía de integración para web y mobile
+- 🧪 **Explorer**: [BaseScan Sepolia](https://sepolia.basescan.org)
 
-# Verificar estado de contratos
-./interact.sh check
-
-# Mint tokens de prueba
-./interact.sh mint <address> <amount>
-
-# Crear cuenta inteligente
-./interact.sh create-account <owner_address>
+#### ⚡ Configuración Rápida
+```javascript
+// JavaScript/TypeScript
+const CONTRACTS = {
+  MARKETPLACE_CORE: "0x7fe5708061E76C271a1A9466f73D7667ed0C7Ddd",
+  SMART_ACCOUNT_FACTORY: "0x030850c3DEa419bB1c76777F0C2A65c34FB60392",
+  REFERRAL_SYSTEM: "0x747EEC46f064763726603c9C5fC928f99926a209",
+  NATIVE_TOKEN: "0x697943EF354BFc7c12169D5303cbbB23b133dc53"
+};
 ```
+
+#### 🔧 Estado del Sistema
+- ✅ **48/48 tests pasando** - Suite completa de tests unitarios e integración
+- ✅ **Contratos verificados** - Todos los contratos verificados en BaseScan
+- ✅ **Account Abstraction** - SmartAccount Factory funcional con CREATE2
+- ✅ **Sistema de Referidos** - Códigos con expiración y límites implementados
+- ✅ **Estados de Transacción** - 5 estados detallados para seguimiento completo
 
 ## 📊 Flujos de Operación
 
