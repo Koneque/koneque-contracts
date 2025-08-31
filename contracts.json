@@ -1,0 +1,112 @@
+{
+  "network": {
+    "name": "Base Sepolia",
+    "chainId": 84532,
+    "rpcUrl": "https://sepolia.base.org",
+    "explorerUrl": "https://sepolia.basescan.org"
+  },
+  "deployment": {
+    "date": "2025-08-31",
+    "deployer": "YOUR_DEPLOYER_ADDRESS",
+    "totalCost": "0.000015154486445882 ETH",
+    "blockRange": "30431731-30431732"
+  },
+  "contracts": {
+    "NativeToken": {
+      "address": "0x3422820Ef9FBC8e0206E4CBcB6369dBd14BE18c4",
+      "description": "Token ERC-20 nativo de la plataforma Koneque",
+      "category": "token",
+      "abi": "artifacts/src/token/NativeToken.sol/NativeToken.json"
+    },
+    "SmartAccount": {
+      "address": "0x5B02258b1441F2850a45eb7949d83f6B103e731e",
+      "description": "Implementación de cuenta inteligente ERC-4337",
+      "category": "account",
+      "abi": "artifacts/src/account/SmartAccount.sol/SmartAccount.json"
+    },
+    "AccountFactory": {
+      "address": "0x5f7272c1532b6B05558757AAC74e4D21E58DECAe",
+      "description": "Factory para crear cuentas inteligentes",
+      "category": "account",
+      "abi": "artifacts/src/account/AccountFactory.sol/AccountFactory.json"
+    },
+    "Paymaster": {
+      "address": "0x5FCA60cbb22e38F8172ae6BA41FFCfad007a41BD",
+      "description": "Contrato para patrocinar gas fees",
+      "category": "account",
+      "abi": "artifacts/src/account/Paymaster.sol/Paymaster.json"
+    },
+    "MarketplaceCore": {
+      "address": "0xbB4fE95d722457484Bc42453d5346a166C7bCAE9",
+      "description": "Contrato principal del marketplace",
+      "category": "marketplace",
+      "abi": "artifacts/src/marketplace/MarketplaceCore.sol/MarketplaceCore.json"
+    },
+    "Escrow": {
+      "address": "0xdE0E60DCaf3e8b36F3C92a9Ea6D97C0e9a3ca194",
+      "description": "Sistema de custodia de fondos",
+      "category": "marketplace",
+      "abi": "artifacts/src/marketplace/Escrow.sol/Escrow.json"
+    },
+    "FeeManager": {
+      "address": "0x4EF6c34dEEae92d4a6314Ba0C0C76fBe1E8360D0",
+      "description": "Gestión de comisiones de la plataforma",
+      "category": "marketplace",
+      "abi": "artifacts/src/marketplace/FeeManager.sol/FeeManager.json"
+    },
+    "DisputeResolution": {
+      "address": "0x4A1E9765473e4E29EB77250360622c6251D2D4e1",
+      "description": "Sistema de resolución de disputas",
+      "category": "dispute",
+      "abi": "artifacts/src/dispute/DisputeResolution.sol/DisputeResolution.json"
+    },
+    "OracleRegistry": {
+      "address": "0xA6680F13c455655C458807C96AEf1947E87572B2",
+      "description": "Registro de oráculos y árbitros",
+      "category": "dispute",
+      "abi": "artifacts/src/dispute/OracleRegistry.sol/OracleRegistry.json"
+    },
+    "ReferralSystem": {
+      "address": "0xB0EBE476289D5070E18Fb7e4C6F44Ce97Be30211",
+      "description": "Sistema de referidos y recompensas",
+      "category": "incentives",
+      "abi": "artifacts/src/incentives/ReferralSystem.sol/ReferralSystem.json"
+    }
+  },
+  "interactions": {
+    "mintTokens": {
+      "contract": "NativeToken",
+      "function": "mint(address,uint256)",
+      "description": "Mintear tokens a una dirección específica"
+    },
+    "createAccount": {
+      "contract": "AccountFactory",
+      "function": "createAccount(address,uint256)",
+      "description": "Crear una nueva cuenta inteligente"
+    },
+    "createOrder": {
+      "contract": "MarketplaceCore",
+      "function": "createOrder(...)",
+      "description": "Crear una nueva orden en el marketplace"
+    },
+    "resolveDispute": {
+      "contract": "DisputeResolution",
+      "function": "resolveDispute(uint256,bool)",
+      "description": "Resolver una disputa existente"
+    }
+  },
+  "configuration": {
+    "relationships": {
+      "MarketplaceCore": ["Escrow", "FeeManager"],
+      "Escrow": ["MarketplaceCore", "DisputeResolution"],
+      "FeeManager": ["MarketplaceCore", "ReferralSystem"],
+      "DisputeResolution": ["OracleRegistry", "Escrow", "MarketplaceCore"],
+      "ReferralSystem": ["FeeManager", "MarketplaceCore"]
+    },
+    "permissions": {
+      "admin": "DEPLOYER_ADDRESS",
+      "minter": ["MarketplaceCore", "FeeManager", "ReferralSystem"],
+      "operator": ["Escrow", "DisputeResolution"]
+    }
+  }
+}

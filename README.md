@@ -123,11 +123,35 @@ forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --private-key $
 ### Testnet/Mainnet
 ```bash
 # Configurar variables de entorno
-export PRIVATE_KEY=your_private_key
+export PRIVATE_KEY=0xyour_private_key
 export RPC_URL=your_rpc_url
 
-# Desplegar
-forge script script/Deploy.s.sol --rpc-url $RPC_URL --private-key $PRIVATE_KEY --broadcast --verify
+# Desplegar en Base Sepolia
+source .env && forge script script/Deploy.s.sol:DeployScript --rpc-url $BASE_SEPOLIA_RPC_URL --broadcast
+```
+
+### 📋 Contratos Desplegados
+
+El proyecto está actualmente desplegado en **Base Sepolia**. Para información detallada sobre las direcciones y configuración:
+
+- 📄 **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Documentación completa de deployment
+- 📊 **[contracts.json](./contracts.json)** - Direcciones en formato JSON
+- 🔧 **[contracts.ts](./contracts.ts)** - Configuración para TypeScript/JavaScript
+- ⚡ **[interact.sh](./interact.sh)** - Script de interacción rápida
+
+#### Interacción Rápida
+```bash
+# Mostrar información de deployment
+./interact.sh info
+
+# Verificar estado de contratos
+./interact.sh check
+
+# Mint tokens de prueba
+./interact.sh mint <address> <amount>
+
+# Crear cuenta inteligente
+./interact.sh create-account <owner_address>
 ```
 
 ## 📊 Flujos de Operación
