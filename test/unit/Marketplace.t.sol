@@ -6,6 +6,7 @@ import "../../src/marketplace/MarketplaceCore.sol";
 import "../../src/marketplace/Escrow.sol";
 import "../../src/marketplace/FeeManager.sol";
 import "../../src/token/NativeToken.sol";
+import "../../src/interfaces/IMarketplace.sol";
 
 contract MarketplaceTest is Test {
     MarketplaceCore public marketplace;
@@ -79,7 +80,7 @@ contract MarketplaceTest is Test {
         assertEq(transaction.buyer, buyer);
         assertEq(transaction.seller, seller);
         assertEq(transaction.amount, price);
-        assertFalse(transaction.isConfirmed);
+        assertEq(uint(transaction.status), uint(IMarketplaceCore.TransactionStatus.PAYMENT_COMPLETED));
         assertFalse(transaction.isDisputed);
         
         // Check item is no longer active
@@ -106,9 +107,17 @@ contract MarketplaceTest is Test {
         vm.prank(buyer);
         marketplace.confirmDelivery(transactionId);
         
-        // Check transaction is confirmed
+        // Check transaction is confirmed (delivery confirmed)
         IMarketplaceCore.Transaction memory transaction = marketplace.getTransactionDetails(transactionId);
-        assertTrue(transaction.isConfirmed);
+        assertEq(uint(transaction.status), uint(IMarketplaceCore.TransactionStatus.PRODUCT_DELIVERED));
+        
+        // Finalize transaction to release funds
+        vm.prank(buyer);
+        marketplace.finalizeTransaction(transactionId);
+        
+        // Check transaction is finalized
+        transaction = marketplace.getTransactionDetails(transactionId);
+        assertEq(uint(transaction.status), uint(IMarketplaceCore.TransactionStatus.FINALIZED));
         
         // Check seller received payment
         assertEq(token.balanceOf(seller), sellerBalanceBefore + price);

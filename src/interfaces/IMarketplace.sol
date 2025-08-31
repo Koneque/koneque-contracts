@@ -2,6 +2,14 @@
 pragma solidity ^0.8.20;
 
 interface IMarketplaceCore {
+    enum TransactionStatus { 
+        PAYMENT_COMPLETED,      // Pago realizado 
+        PRODUCT_DELIVERED,      // Producto entregado
+        FINALIZED,             // Finalizado
+        IN_DISPUTE,            // En disputa
+        REFUNDED               // Reembolsado
+    }
+
     struct Item {
         uint256 id;
         address seller;
@@ -19,7 +27,7 @@ interface IMarketplaceCore {
         address seller;
         uint256 amount;
         uint256 timestamp;
-        bool isConfirmed;
+        TransactionStatus status;
         bool isDisputed;
     }
 
@@ -28,8 +36,10 @@ interface IMarketplaceCore {
     function buyBatch(uint256[] calldata itemIds) external returns (uint256[] memory);
     function cancelListing(uint256 itemId) external;
     function confirmDelivery(uint256 transactionId) external;
+    function updateTransactionStatus(uint256 transactionId, TransactionStatus newStatus) external;
     function getItemDetails(uint256 itemId) external view returns (Item memory);
     function getActiveListings() external view returns (Item[] memory);
+    function getTransactionsByStatus(TransactionStatus status) external view returns (Transaction[] memory);
 }
 
 interface IEscrow {

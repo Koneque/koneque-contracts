@@ -143,6 +143,10 @@ contract IntegrationTest is Test {
         vm.prank(buyer);
         marketplace.confirmDelivery(transactionId);
         
+        // Finalize transaction to release funds
+        vm.prank(buyer);
+        marketplace.finalizeTransaction(transactionId);
+        
         // Verify seller received payment
         assertEq(token.balanceOf(seller), sellerBalanceBefore + itemPrice);
         

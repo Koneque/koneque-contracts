@@ -24,6 +24,9 @@ contract MarketplaceCore is IMarketplaceCore, Ownable, ReentrancyGuard {
     event BatchPurchased(uint256[] itemIds, uint256[] transactionIds, address indexed buyer);
     event ItemCancelled(uint256 indexed itemId, address indexed seller);
     event DeliveryConfirmed(uint256 indexed transactionId, address indexed buyer);
+    event TransactionFinalized(uint256 indexed transactionId, address indexed buyer);
+    event TransactionDisputed(uint256 indexed transactionId, address indexed initiator);
+    event TransactionRefunded(uint256 indexed transactionId, address indexed buyer);
     
     modifier onlyEscrow() {
         require(msg.sender == escrowContract, "Only escrow can call");
@@ -94,7 +97,7 @@ contract MarketplaceCore is IMarketplaceCore, Ownable, ReentrancyGuard {
             seller: item.seller,
             amount: item.price,
             timestamp: block.timestamp,
-            isConfirmed: false,
+            status: TransactionStatus.PAYMENT_COMPLETED,
             isDisputed: false
         });
         
@@ -146,7 +149,7 @@ contract MarketplaceCore is IMarketplaceCore, Ownable, ReentrancyGuard {
                 seller: item.seller,
                 amount: item.price,
                 timestamp: block.timestamp,
-                isConfirmed: false,
+                status: TransactionStatus.PAYMENT_COMPLETED,
                 isDisputed: false
             });
             
@@ -182,15 +185,54 @@ contract MarketplaceCore is IMarketplaceCore, Ownable, ReentrancyGuard {
     function confirmDelivery(uint256 transactionId) external override {
         Transaction storage transaction = transactions[transactionId];
         require(transaction.buyer == msg.sender, "Not the buyer");
-        require(!transaction.isConfirmed, "Already confirmed");
+        require(transaction.status == TransactionStatus.PAYMENT_COMPLETED, "Invalid status");
         require(!transaction.isDisputed, "Transaction disputed");
         
-        transaction.isConfirmed = true;
+        transaction.status = TransactionStatus.PRODUCT_DELIVERED;
+        
+        emit DeliveryConfirmed(transactionId, msg.sender);
+    }
+    
+    function finalizeTransaction(uint256 transactionId) external {
+        Transaction storage transaction = transactions[transactionId];
+        require(transaction.buyer == msg.sender, "Not the buyer");
+        require(transaction.status == TransactionStatus.PRODUCT_DELIVERED, "Product not delivered");
+        require(!transaction.isDisputed, "Transaction disputed");
+        
+        transaction.status = TransactionStatus.FINALIZED;
         
         // Release funds from escrow
         IEscrow(escrowContract).releaseFunds(transactionId);
         
-        emit DeliveryConfirmed(transactionId, msg.sender);
+        emit TransactionFinalized(transactionId, msg.sender);
+    }
+    
+    function initiateDispute(uint256 transactionId) external {
+        Transaction storage transaction = transactions[transactionId];
+        require(
+            transaction.buyer == msg.sender || transaction.seller == msg.sender,
+            "Not buyer or seller"
+        );
+        require(
+            transaction.status == TransactionStatus.PAYMENT_COMPLETED || 
+            transaction.status == TransactionStatus.PRODUCT_DELIVERED,
+            "Invalid status for dispute"
+        );
+        require(!transaction.isDisputed, "Already disputed");
+        
+        transaction.isDisputed = true;
+        transaction.status = TransactionStatus.IN_DISPUTE;
+        
+        emit TransactionDisputed(transactionId, msg.sender);
+    }
+    
+    function refundTransaction(uint256 transactionId) external onlyEscrow {
+        Transaction storage transaction = transactions[transactionId];
+        require(transaction.status == TransactionStatus.IN_DISPUTE, "Not in dispute");
+        
+        transaction.status = TransactionStatus.REFUNDED;
+        
+        emit TransactionRefunded(transactionId, transaction.buyer);
     }
     
     function getItemDetails(uint256 itemId) external view override returns (Item memory) {
@@ -240,5 +282,35 @@ contract MarketplaceCore is IMarketplaceCore, Ownable, ReentrancyGuard {
     
     function getTotalTransactions() external view returns (uint256) {
         return _transactionIdCounter;
+    }
+    
+    function updateTransactionStatus(uint256 transactionId, TransactionStatus newStatus) external override onlyEscrow {
+        require(transactions[transactionId].buyer != address(0), "Transaction not found");
+        transactions[transactionId].status = newStatus;
+    }
+    
+    function getTransactionsByStatus(TransactionStatus status) external view override returns (Transaction[] memory) {
+        uint256 count = 0;
+        uint256 totalTransactions = _transactionIdCounter;
+        
+        // Count transactions with the specific status
+        for (uint256 i = 1; i <= totalTransactions; i++) {
+            if (transactions[i].status == status) {
+                count++;
+            }
+        }
+        
+        Transaction[] memory result = new Transaction[](count);
+        uint256 currentIndex = 0;
+        
+        // Populate the result array
+        for (uint256 i = 1; i <= totalTransactions; i++) {
+            if (transactions[i].status == status) {
+                result[currentIndex] = transactions[i];
+                currentIndex++;
+            }
+        }
+        
+        return result;
     }
 }
